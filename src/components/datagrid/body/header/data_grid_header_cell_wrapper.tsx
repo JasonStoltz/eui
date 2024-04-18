@@ -52,6 +52,12 @@ export const EuiDataGridHeaderCellWrapper: FunctionComponent<
   useEffect(() => {
     onFocusUpdate([index, -1], (isFocused: boolean) => {
       setIsFocused(isFocused);
+      if (isFocused && headerEl) {
+        // Only focus the cell if not already focused on something in the cell
+        if (!headerEl.contains(document.activeElement)) {
+          headerEl.focus();
+        }
+      }
     });
   }, [index, onFocusUpdate]);
 
