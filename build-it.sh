@@ -34,8 +34,8 @@ mv "${package3}" ../../../kibana/${package3new}
 
 wait
 echo "Update package.json in Kibana with the following:
-"@elastic/eui": "file:./$package3new",
-"@elastic/eui-theme-borealis": "file:./${package1new}",
-"@elastic/eui-theme-common": "file:./${package2new}",
+\"@elastic/eui\": \"file:./${package3new}\",
+\"@elastic/eui-theme-borealis\": \"file:./${package1new}\",
+\"@elastic/eui-theme-common\": \"file:./${package2new}\",
 "
 
