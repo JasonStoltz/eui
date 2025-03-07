@@ -12,24 +12,27 @@ yarn build:workspaces
 echo `pwd`
   
 cd ../eui-theme-borealis
-yarn build-pack
+yarn build && yarn pack --out %s${cacheBust}-%v.tgz
 package1=$(ls -t | head -n1)
 # Because to commit this to Kibana for a POC you need to use snakecase
-package1new="${cacheBust}${package1//-/_}"
+package1new="${package1//-/_}"
+package1new="${package1new//@/}"
 mv "${package1}" ../../../kibana/${package1new}
 
 cd ../eui-theme-common
-yarn build-pack
+yarn build && yarn pack --out %s${cacheBust}-%v.tgz
 package2=$(ls -t | head -n1)
 # Because to commit this to Kibana for a POC you need to use snakecase
-package2new="${cacheBust}${package2//-/_}"
+package2new="${package2//-/_}"
+package2new="${package2new//@/}"
 mv "${package2}" ../../../kibana/${package2new}
 
 cd ../eui
-yarn build-pack
+yarn build && yarn pack --out %s${cacheBust}-%v.tgz
 package3=$(ls -t | head -n1)
 # Because to commit this to Kibana for a POC you need to use snakecase
-package3new="${cacheBust}${package3//-/_}"
+package3new="${package3//-/_}"
+package3new="${package3new//@/}"
 mv "${package3}" ../../../kibana/${package3new}
 
 wait
@@ -38,4 +41,3 @@ echo "Update package.json in Kibana with the following:
 \"@elastic/eui-theme-borealis\": \"file:./${package1new}\",
 \"@elastic/eui-theme-common\": \"file:./${package2new}\",
 "
-
