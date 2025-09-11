@@ -24,6 +24,16 @@ export interface UseTypewriterEffectOptions {
    */
   enabled?: boolean;
   /**
+   * Whether to respect user's reduced motion preferences
+   * @default true
+   */
+  respectReducedMotion?: boolean;
+  /**
+   * Whether to announce text changes to screen readers
+   * @default false
+   */
+  announceChanges?: boolean;
+  /**
    * Callback fired when typing is complete
    */
   onComplete?: () => void;
@@ -46,6 +56,10 @@ export interface UseTypewriterEffectReturn {
    * Whether the typing is complete
    */
   isComplete: boolean;
+  /**
+   * Whether the effect respects reduced motion preferences
+   */
+  respectsReducedMotion: boolean;
   /**
    * Manually start the typewriter effect
    */
@@ -74,10 +88,18 @@ export interface UseTypewriterEffectReturn {
  * return <div>{displayText}</div>;
  * ```
  */
+// Helper function to check for reduced motion preference
+const prefersReducedMotion = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
+
 export const useTypewriterEffect = ({
   text,
   typingSpeed = 50,
   enabled = true,
+  respectReducedMotion = true,
+  announceChanges = false,
   onComplete,
   onStart,
 }: UseTypewriterEffectOptions): UseTypewriterEffectReturn => {
@@ -87,15 +109,53 @@ export const useTypewriterEffect = ({
   const timeoutRef = useRef<NodeJS.Timeout>();
   const currentIndexRef = useRef(0);
   const previousTextRef = useRef('');
+  const announcerRef = useRef<HTMLDivElement | null>(null);
+  
+  // Check if user prefers reduced motion
+  const shouldRespectReducedMotion = respectReducedMotion && prefersReducedMotion();
+  const effectiveEnabled = enabled && !shouldRespectReducedMotion;
+
+  // Create screen reader announcer element
+  useEffect(() => {
+    if (announceChanges && typeof document !== 'undefined') {
+      const announcer = document.createElement('div');
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.setAttribute('aria-atomic', 'true');
+      announcer.style.position = 'absolute';
+      announcer.style.left = '-10000px';
+      announcer.style.width = '1px';
+      announcer.style.height = '1px';
+      announcer.style.overflow = 'hidden';
+      document.body.appendChild(announcer);
+      announcerRef.current = announcer;
+      
+      return () => {
+        if (announcerRef.current) {
+          document.body.removeChild(announcerRef.current);
+          announcerRef.current = null;
+        }
+      };
+    }
+  }, [announceChanges]);
+
+  const announceToScreenReader = (message: string) => {
+    if (announceChanges && announcerRef.current) {
+      announcerRef.current.textContent = message;
+    }
+  };
 
   const start = () => {
-    if (!enabled || !text) return;
+    if (!effectiveEnabled || !text) return;
     
     setIsTyping(true);
     setIsComplete(false);
     currentIndexRef.current = 0;
     setDisplayText('');
     onStart?.();
+    
+    if (announceChanges) {
+      announceToScreenReader('Typing started');
+    }
   };
 
   const stop = () => {
@@ -103,6 +163,10 @@ export const useTypewriterEffect = ({
       clearTimeout(timeoutRef.current);
     }
     setIsTyping(false);
+    
+    if (announceChanges) {
+      announceToScreenReader('Typing stopped');
+    }
   };
 
   const reset = () => {
@@ -117,16 +181,20 @@ export const useTypewriterEffect = ({
     if (text !== previousTextRef.current) {
       previousTextRef.current = text;
       
-      if (enabled && text) {
+      if (effectiveEnabled && text) {
         start();
       } else {
-        // If disabled, just set the text immediately
+        // If disabled or reduced motion, just set the text immediately
         setDisplayText(text);
         setIsComplete(true);
         setIsTyping(false);
+        
+        if (announceChanges && text) {
+          announceToScreenReader(`Text updated: ${text}`);
+        }
       }
     }
-  }, [text, enabled]);
+  }, [text, effectiveEnabled, announceChanges]);
 
   useEffect(() => {
     if (!isTyping || !text) return;
@@ -144,6 +212,10 @@ export const useTypewriterEffect = ({
       setIsTyping(false);
       setIsComplete(true);
       onComplete?.();
+      
+      if (announceChanges) {
+        announceToScreenReader(`Typing complete: ${text}`);
+      }
     }
 
     return () => {
@@ -166,6 +238,7 @@ export const useTypewriterEffect = ({
     displayText,
     isTyping,
     isComplete,
+    respectsReducedMotion: shouldRespectReducedMotion,
     start,
     stop,
     reset,

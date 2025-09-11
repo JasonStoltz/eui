@@ -207,4 +207,93 @@ describe('useTypewriterEffect', () => {
     expect(clearTimeoutSpy).toHaveBeenCalled();
     clearTimeoutSpy.mockRestore();
   });
+
+  describe('Accessibility features', () => {
+    beforeEach(() => {
+      // Mock window.matchMedia
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        value: jest.fn().mockImplementation(query => ({
+          matches: false,
+          media: query,
+          onchange: null,
+          addListener: jest.fn(),
+          removeListener: jest.fn(),
+          addEventListener: jest.fn(),
+          removeEventListener: jest.fn(),
+          dispatchEvent: jest.fn(),
+        })),
+      });
+    });
+
+    it('should respect reduced motion preferences', () => {
+      // Mock reduced motion preference
+      window.matchMedia = jest.fn().mockImplementation(query => ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      }));
+
+      const { result } = renderHook(() =>
+        useTypewriterEffect({ text: 'Hello', respectReducedMotion: true })
+      );
+
+      expect(result.current.respectsReducedMotion).toBe(true);
+      expect(result.current.displayText).toBe('Hello');
+      expect(result.current.isTyping).toBe(false);
+      expect(result.current.isComplete).toBe(true);
+    });
+
+    it('should not respect reduced motion when disabled', () => {
+      // Mock no reduced motion preference
+      window.matchMedia = jest.fn().mockImplementation(query => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      }));
+
+      const { result } = renderHook(() =>
+        useTypewriterEffect({ text: 'Hello', respectReducedMotion: false })
+      );
+
+      expect(result.current.respectsReducedMotion).toBe(false);
+      expect(result.current.isTyping).toBe(true);
+    });
+
+    it('should create screen reader announcer when announceChanges is enabled', () => {
+      const createElementSpy = jest.spyOn(document, 'createElement');
+      const appendChildSpy = jest.spyOn(document.body, 'appendChild');
+
+      renderHook(() =>
+        useTypewriterEffect({ text: 'Hello', announceChanges: true })
+      );
+
+      expect(createElementSpy).toHaveBeenCalledWith('div');
+      expect(appendChildSpy).toHaveBeenCalled();
+
+      createElementSpy.mockRestore();
+      appendChildSpy.mockRestore();
+    });
+
+    it('should not create screen reader announcer when announceChanges is disabled', () => {
+      const createElementSpy = jest.spyOn(document, 'createElement');
+
+      renderHook(() =>
+        useTypewriterEffect({ text: 'Hello', announceChanges: false })
+      );
+
+      expect(createElementSpy).not.toHaveBeenCalledWith('div');
+      createElementSpy.mockRestore();
+    });
+  });
 });

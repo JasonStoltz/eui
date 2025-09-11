@@ -90,7 +90,7 @@ const TypewriterDemo: React.FC<{
 };
 
 // Multiple demos component
-const MultipleTypewriters: React.FC = () => {
+const MultipleTypewritersDemo: React.FC = () => {
   const [texts] = useState([
     "Welcome to EUI!",
     "Building amazing user interfaces",
@@ -266,7 +266,7 @@ export const LongText: Story = {
 };
 
 export const MultipleTypewriters: Story = {
-  render: () => <MultipleTypewriters />,
+  render: () => <MultipleTypewritersDemo />,
   parameters: {
     docs: {
       description: {
