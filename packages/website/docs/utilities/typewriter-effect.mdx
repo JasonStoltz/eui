@@ -59,6 +59,8 @@ render(<TypewriterDemo />);`}
 | `text` | `string` | - | The text to type out |
 | `typingSpeed` | `number` | `50` | Speed of typing in milliseconds between each character |
 | `enabled` | `boolean` | `true` | Whether the typewriter effect is enabled |
+| `respectReducedMotion` | `boolean` | `true` | Whether to respect user's reduced motion preferences |
+| `announceChanges` | `boolean` | `false` | Whether to announce text changes to screen readers |
 | `onStart` | `() => void` | - | Callback fired when typing starts |
 | `onComplete` | `() => void` | - | Callback fired when typing is complete |
 
@@ -69,6 +71,7 @@ render(<TypewriterDemo />);`}
 | `displayText` | `string` | The current displayed text |
 | `isTyping` | `boolean` | Whether the typewriter effect is currently typing |
 | `isComplete` | `boolean` | Whether the typing is complete |
+| `respectsReducedMotion` | `boolean` | Whether the effect respects reduced motion preferences |
 | `start` | `() => void` | Manually start the typewriter effect |
 | `stop` | `() => void` | Manually stop the typewriter effect |
 | `reset` | `() => void` | Reset the typewriter effect |
@@ -252,14 +255,48 @@ Guide users through onboarding with animated text that draws attention to import
 ### Interactive demos
 Create engaging demos and presentations with animated text that keeps users engaged.
 
-## Best practices
+## Accessibility
 
-- **Accessibility**: Consider users who prefer reduced motion. You can disable the effect based on user preferences.
-- **Performance**: The hook automatically cleans up timers, but avoid using it with very long texts in performance-critical scenarios.
-- **User experience**: Don't overuse the effect. It should enhance the experience, not slow down users who want to read quickly.
+The `useTypewriterEffect` hook includes several accessibility features to ensure a good experience for all users:
+
+### Reduced Motion Support
+
+The hook automatically respects the user's `prefers-reduced-motion` setting by default. When this preference is detected, the typewriter effect is disabled and text appears immediately.
+
+```typescript
+const { displayText, respectsReducedMotion } = useTypewriterEffect({
+  text: "Hello, world!",
+  respectReducedMotion: true, // Default: true
+});
+
+// Check if reduced motion is being respected
+if (respectsReducedMotion) {
+  console.log("User prefers reduced motion, effect disabled");
+}
+```
+
+### Screen Reader Announcements
+
+You can optionally enable screen reader announcements for typing events:
+
+```typescript
+const { displayText } = useTypewriterEffect({
+  text: "Important message",
+  announceChanges: true, // Default: false
+});
+```
+
+**Note**: Screen reader announcements are disabled by default to avoid overwhelming users with repeated announcements as each character appears. Only enable this for important status changes.
+
+### Best Practices
+
+- **Respect user preferences**: Always keep `respectReducedMotion: true` (default)
+- **Minimize announcements**: Only use `announceChanges: true` for critical status updates
+- **Provide alternatives**: Consider providing a way for users to skip or disable animations
+- **Test with assistive technology**: Verify the experience works well with screen readers and other tools
 
 <EuiCallOut title="Accessibility note" color="warning">
-  Consider respecting the user's motion preferences by checking `prefers-reduced-motion` and disabling the effect when appropriate.
+  The hook automatically respects `prefers-reduced-motion` by default. Screen reader announcements are disabled by default to prevent overwhelming users with repeated announcements as each character appears.
 </EuiCallOut>
 
 ## Implementation details

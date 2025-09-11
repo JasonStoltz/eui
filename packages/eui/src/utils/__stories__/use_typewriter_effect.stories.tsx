@@ -11,20 +11,24 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 
 import { useTypewriterEffect } from '../use_typewriter_effect';
-import { EuiButton, EuiButtonGroup, EuiCard, EuiFlexGroup, EuiFlexItem, EuiPanel, EuiText, EuiTitle } from '../components';
+import { EuiButton, EuiCard, EuiFlexGroup, EuiFlexItem, EuiPanel, EuiText, EuiTitle } from '../../components';
 
 // Demo component that uses the hook
 const TypewriterDemo: React.FC<{
   text: string;
   typingSpeed: number;
   enabled: boolean;
+  respectReducedMotion: boolean;
+  announceChanges: boolean;
   showControls: boolean;
   showStatus: boolean;
-}> = ({ text, typingSpeed, enabled, showControls, showStatus }) => {
-  const { displayText, isTyping, isComplete, start, stop, reset } = useTypewriterEffect({
+}> = ({ text, typingSpeed, enabled, respectReducedMotion, announceChanges, showControls, showStatus }) => {
+  const { displayText, isTyping, isComplete, respectsReducedMotion, start, stop, reset } = useTypewriterEffect({
     text,
     typingSpeed,
     enabled,
+    respectReducedMotion,
+    announceChanges,
     onStart: action('onStart'),
     onComplete: action('onComplete'),
   });
@@ -59,6 +63,11 @@ const TypewriterDemo: React.FC<{
           <EuiFlexItem>
             <EuiText size="s" color="subdued">
               Status: {isTyping ? 'Typing...' : isComplete ? 'Complete' : 'Ready'}
+              {respectsReducedMotion && (
+                <span style={{ marginLeft: '8px', color: '#0066cc' }}>
+                  (Reduced motion detected)
+                </span>
+              )}
             </EuiText>
           </EuiFlexItem>
         )}
@@ -110,6 +119,8 @@ const MultipleTypewritersDemo: React.FC = () => {
               text={text}
               typingSpeed={50 + index * 25}
               enabled={true}
+              respectReducedMotion={true}
+              announceChanges={false}
               showControls={false}
               showStatus={true}
             />
@@ -189,6 +200,15 @@ It's useful for creating engaging user interfaces, loading states, or conversati
 - **Callback support** - React to typing start and completion
 - **State tracking** - Know when typing is in progress or complete
 - **Automatic cleanup** - Proper timer management
+- **Accessibility support** - Respects reduced motion preferences
+- **Screen reader support** - Optional announcements for important changes
+
+## Accessibility Features
+
+- **Reduced Motion Support**: Automatically respects \`prefers-reduced-motion: reduce\` setting
+- **Screen Reader Announcements**: Optional controlled announcements (disabled by default)
+- **Immediate Text Access**: Text is always accessible, with or without animation
+- **Proper ARIA Implementation**: Uses \`aria-live\` regions for announcements
 
 ## Use Cases
 
@@ -197,6 +217,14 @@ It's useful for creating engaging user interfaces, loading states, or conversati
 - Onboarding flows with animated text
 - Interactive demos and presentations
 - Accessibility-friendly text animations
+- Status updates and notifications
+
+## Best Practices
+
+- Keep \`respectReducedMotion: true\` (default) to honor user preferences
+- Use \`announceChanges: true\` only for critical status updates
+- Test with assistive technology to ensure good experience
+- Consider providing alternatives for users who prefer static text
         `,
       },
     },
@@ -214,6 +242,14 @@ It's useful for creating engaging user interfaces, loading states, or conversati
       control: 'boolean',
       description: 'Whether the typewriter effect is enabled',
     },
+    respectReducedMotion: {
+      control: 'boolean',
+      description: 'Whether to respect user\'s reduced motion preferences',
+    },
+    announceChanges: {
+      control: 'boolean',
+      description: 'Whether to announce text changes to screen readers',
+    },
     showControls: {
       control: 'boolean',
       description: 'Show manual control buttons',
@@ -227,6 +263,8 @@ It's useful for creating engaging user interfaces, loading states, or conversati
     text: 'Hello, world! This is a typewriter effect.',
     typingSpeed: 50,
     enabled: true,
+    respectReducedMotion: true,
+    announceChanges: false,
     showControls: true,
     showStatus: true,
   },
@@ -262,6 +300,23 @@ export const LongText: Story = {
   args: {
     text: 'This is a much longer text that demonstrates how the typewriter effect works with extended content. It will type out character by character, creating an engaging reading experience for users.',
     typingSpeed: 30,
+  },
+};
+
+export const AccessibilityFeatures: Story = {
+  args: {
+    text: 'Accessibility is important!',
+    typingSpeed: 100,
+    respectReducedMotion: true,
+    announceChanges: true,
+    showStatus: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Demonstrates accessibility features including reduced motion support and screen reader announcements.',
+      },
+    },
   },
 };
 
