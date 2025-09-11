@@ -1,0 +1,279 @@
+---
+title: useTypewriterEffect
+description: A React hook that provides a typewriter animation effect for text display.
+---
+
+import { Playground } from '@site/src/components/playground';
+import { EuiCode, EuiText, EuiTitle, EuiSpacer, EuiCallOut, EuiCodeBlock } from '@elastic/eui';
+
+## Basic usage
+
+The `useTypewriterEffect` hook creates a typewriter animation that types out text character by character. It's perfect for creating engaging user interfaces, loading states, or conversational interfaces.
+
+<Playground
+  config={{
+    imports: {
+      '@elastic/eui': {
+        named: ['useTypewriterEffect', 'EuiPanel', 'EuiText', 'EuiButton', 'EuiFlexGroup', 'EuiFlexItem']
+      }
+    },
+    scope: {
+      React: React,
+    }
+  }}
+  code={`const TypewriterDemo = () => {
+  const { displayText, isTyping } = useTypewriterEffect({
+    text: "Welcome to EUI!",
+    typingSpeed: 50,
+  });
+
+  return (
+    <EuiPanel paddingSize="l">
+      <EuiText>
+        <div style={{ 
+          fontSize: '18px', 
+          fontFamily: 'monospace',
+          minHeight: '24px',
+          border: '1px solid #d3dae6',
+          padding: '8px 12px',
+          borderRadius: '4px',
+          backgroundColor: '#f8f9fa'
+        }}>
+          {displayText}
+          {isTyping && <span style={{ animation: 'blink 1s infinite' }}>|</span>}
+        </div>
+      </EuiText>
+    </EuiPanel>
+  );
+};
+
+render(<TypewriterDemo />);`}
+/>
+
+## API
+
+### Parameters
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `text` | `string` | - | The text to type out |
+| `typingSpeed` | `number` | `50` | Speed of typing in milliseconds between each character |
+| `enabled` | `boolean` | `true` | Whether the typewriter effect is enabled |
+| `onStart` | `() => void` | - | Callback fired when typing starts |
+| `onComplete` | `() => void` | - | Callback fired when typing is complete |
+
+### Returns
+
+| Name | Type | Description |
+|------|------|-------------|
+| `displayText` | `string` | The current displayed text |
+| `isTyping` | `boolean` | Whether the typewriter effect is currently typing |
+| `isComplete` | `boolean` | Whether the typing is complete |
+| `start` | `() => void` | Manually start the typewriter effect |
+| `stop` | `() => void` | Manually stop the typewriter effect |
+| `reset` | `() => void` | Reset the typewriter effect |
+
+## Examples
+
+### Custom typing speed
+
+<Playground
+  config={{
+    imports: {
+      '@elastic/eui': {
+        named: ['useTypewriterEffect', 'EuiPanel', 'EuiText', 'EuiButton', 'EuiFlexGroup', 'EuiFlexItem']
+      }
+    },
+    scope: {
+      React: React,
+    }
+  }}
+  code={`const FastTypingDemo = () => {
+  const { displayText, isTyping } = useTypewriterEffect({
+    text: "Fast typing speed!",
+    typingSpeed: 20,
+  });
+
+  return (
+    <EuiPanel paddingSize="l">
+      <EuiText>
+        <div style={{ 
+          fontSize: '16px', 
+          fontFamily: 'monospace',
+          minHeight: '20px',
+          border: '1px solid #d3dae6',
+          padding: '8px 12px',
+          borderRadius: '4px',
+          backgroundColor: '#f8f9fa'
+        }}>
+          {displayText}
+          {isTyping && <span style={{ animation: 'blink 1s infinite' }}>|</span>}
+        </div>
+      </EuiText>
+    </EuiPanel>
+  );
+};
+
+render(<FastTypingDemo />);`}
+/>
+
+### Manual controls
+
+<Playground
+  config={{
+    imports: {
+      '@elastic/eui': {
+        named: ['useTypewriterEffect', 'EuiPanel', 'EuiText', 'EuiButton', 'EuiFlexGroup', 'EuiFlexItem']
+      }
+    },
+    scope: {
+      React: React,
+    }
+  }}
+  code={`const ManualControlDemo = () => {
+  const { displayText, isTyping, isComplete, start, stop, reset } = useTypewriterEffect({
+    text: "You can control me!",
+    typingSpeed: 100,
+    enabled: false, // Start disabled
+  });
+
+  return (
+    <EuiPanel paddingSize="l">
+      <EuiFlexGroup direction="column" gutterSize="m">
+        <EuiFlexItem>
+          <EuiText>
+            <div style={{ 
+              fontSize: '16px', 
+              fontFamily: 'monospace',
+              minHeight: '20px',
+              border: '1px solid #d3dae6',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              backgroundColor: '#f8f9fa'
+            }}>
+              {displayText}
+              {isTyping && <span style={{ animation: 'blink 1s infinite' }}>|</span>}
+            </div>
+          </EuiText>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiFlexGroup gutterSize="s">
+            <EuiFlexItem grow={false}>
+              <EuiButton size="s" onClick={start} disabled={isTyping}>
+                Start
+              </EuiButton>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButton size="s" onClick={stop} disabled={!isTyping}>
+                Stop
+              </EuiButton>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiButton size="s" onClick={reset}>
+                Reset
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    </EuiPanel>
+  );
+};
+
+render(<ManualControlDemo />);`}
+/>
+
+### Callbacks
+
+<Playground
+  config={{
+    imports: {
+      '@elastic/eui': {
+        named: ['useTypewriterEffect', 'EuiPanel', 'EuiText', 'EuiCallOut']
+      }
+    },
+    scope: {
+      React: React,
+    }
+  }}
+  code={`const CallbackDemo = () => {
+  const [events, setEvents] = React.useState([]);
+  
+  const { displayText, isTyping } = useTypewriterEffect({
+    text: "Watch the events below!",
+    typingSpeed: 80,
+    onStart: () => setEvents(prev => [...prev, 'Started typing']),
+    onComplete: () => setEvents(prev => [...prev, 'Finished typing']),
+  });
+
+  return (
+    <EuiPanel paddingSize="l">
+      <EuiFlexGroup direction="column" gutterSize="m">
+        <EuiFlexItem>
+          <EuiText>
+            <div style={{ 
+              fontSize: '16px', 
+              fontFamily: 'monospace',
+              minHeight: '20px',
+              border: '1px solid #d3dae6',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              backgroundColor: '#f8f9fa'
+            }}>
+              {displayText}
+              {isTyping && <span style={{ animation: 'blink 1s infinite' }}>|</span>}
+            </div>
+          </EuiText>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiCallOut title="Events" color="primary">
+            {events.length === 0 ? 'No events yet...' : events.join(', ')}
+          </EuiCallOut>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    </EuiPanel>
+  );
+};
+
+render(<CallbackDemo />);`}
+/>
+
+## Use cases
+
+### Loading states
+Use the typewriter effect to create engaging loading states with dynamic text that explains what's happening.
+
+### Chat interfaces
+Perfect for chat applications where you want to show typing indicators or animate message appearance.
+
+### Onboarding flows
+Guide users through onboarding with animated text that draws attention to important information.
+
+### Interactive demos
+Create engaging demos and presentations with animated text that keeps users engaged.
+
+## Best practices
+
+- **Accessibility**: Consider users who prefer reduced motion. You can disable the effect based on user preferences.
+- **Performance**: The hook automatically cleans up timers, but avoid using it with very long texts in performance-critical scenarios.
+- **User experience**: Don't overuse the effect. It should enhance the experience, not slow down users who want to read quickly.
+
+<EuiCallOut title="Accessibility note" color="warning">
+  Consider respecting the user's motion preferences by checking `prefers-reduced-motion` and disabling the effect when appropriate.
+</EuiCallOut>
+
+## Implementation details
+
+The hook uses `setTimeout` to create the typing effect and automatically cleans up timers when the component unmounts or when the text changes. It tracks the current typing state and provides manual controls for advanced use cases.
+
+<EuiCodeBlock language="typescript">
+{`import { useTypewriterEffect } from '@elastic/eui';
+
+const { displayText, isTyping, isComplete, start, stop, reset } = useTypewriterEffect({
+  text: "Your text here",
+  typingSpeed: 50,
+  enabled: true,
+  onStart: () => console.log("Started"),
+  onComplete: () => console.log("Finished")
+});`}
+</EuiCodeBlock>
